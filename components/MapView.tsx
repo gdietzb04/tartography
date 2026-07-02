@@ -12,14 +12,25 @@ interface MapViewProps {
 }
 
 const NYC_CENTER = { lat: 40.72, lng: -73.96 };
+const MARKER_SIZE = 46;
 
 const tartIcon = (highlight: boolean) =>
   "data:image/svg+xml;utf8," +
   encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 36 36">
-      <circle cx="18" cy="18" r="15" fill="${highlight ? "#A64B35" : "#FEF9EF"}" stroke="#7A4A21" stroke-width="2.5"/>
-      <ellipse cx="18" cy="19" rx="9" ry="6" fill="#E8C97E" stroke="#7A4A21" stroke-width="1.5"/>
-      <ellipse cx="18" cy="18" rx="6" ry="3.5" fill="#F0B429"/>
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${MARKER_SIZE}" height="${MARKER_SIZE}" viewBox="0 0 46 46">
+      <ellipse cx="23" cy="42" rx="7" ry="2" fill="#3A2A1B" opacity="0.18"/>
+      <circle cx="23" cy="21" r="19" fill="${highlight ? "#A64B35" : "#FEF9EF"}" stroke="#7A4A21" stroke-width="3"/>
+      <ellipse cx="23" cy="23" rx="11.5" ry="7.5" fill="#E8C97E" stroke="#7A4A21" stroke-width="1.8"/>
+      <ellipse cx="23" cy="21" rx="8" ry="4.5" fill="#F0B429"/>
+    </svg>`
+  );
+
+const clusterIcon = (count: number, size: number) =>
+  "data:image/svg+xml;utf8," +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+      <circle cx="${size / 2}" cy="${size / 2}" r="${size / 2 - 3}" fill="#A64B35" stroke="#FEF9EF" stroke-width="3"/>
+      <text x="50%" y="53%" text-anchor="middle" dominant-baseline="middle" font-family="Georgia,serif" font-weight="700" font-size="${size * 0.34}" fill="#FEF9EF">${count}</text>
     </svg>`
   );
 
@@ -40,6 +51,7 @@ export default function MapView({ shops, selectedId, onSelect }: MapViewProps) {
   const markersRef = useRef<Map<string, google.maps.Marker>>(new Map());
   const clustererRef = useRef<MarkerClusterer | null>(null);
   const infoRef = useRef<google.maps.InfoWindow | null>(null);
+  const hasFitOnceRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -56,6 +68,7 @@ export default function MapView({ shops, selectedId, onSelect }: MapViewProps) {
         mapTypeControl: false,
         streetViewControl: false,
         fullscreenControl: false,
+        zoomControlOptions: { position: google.maps.ControlPosition.RIGHT_BOTTOM },
       });
       infoRef.current = new google.maps.InfoWindow();
       renderMarkers();
@@ -77,7 +90,8 @@ export default function MapView({ shops, selectedId, onSelect }: MapViewProps) {
         title: shop.name,
         icon: {
           url: tartIcon(shop.id === selectedId),
-          scaledSize: new google.maps.Size(36, 36),
+          scaledSize: new google.maps.Size(MARKER_SIZE, MARKER_SIZE),
+          anchor: new google.maps.Point(MARKER_SIZE / 2, MARKER_SIZE - 6),
         },
       });
       marker.addListener("click", () => {
@@ -100,9 +114,33 @@ export default function MapView({ shops, selectedId, onSelect }: MapViewProps) {
       return marker;
     });
     if (!clustererRef.current) {
-      clustererRef.current = new MarkerClusterer({ map, markers });
+      clustererRef.current = new MarkerClusterer({
+        map,
+        markers,
+        renderer: {
+          render: ({ count, position }) =>
+            new google.maps.Marker({
+              position,
+              icon: {
+                url: clusterIcon(count, count > 20 ? 60 : count > 8 ? 52 : 44),
+                scaledSize: new google.maps.Size(
+                  count > 20 ? 60 : count > 8 ? 52 : 44,
+                  count > 20 ? 60 : count > 8 ? 52 : 44
+                ),
+              },
+              zIndex: 1000 + count,
+            }),
+        },
+      });
     } else {
       clustererRef.current.addMarkers(markers);
+    }
+
+    if (!hasFitOnceRef.current && shops.length > 1) {
+      const bounds = new google.maps.LatLngBounds();
+      shops.forEach((s) => bounds.extend({ lat: s.lat, lng: s.lng }));
+      map.fitBounds(bounds, 48);
+      hasFitOnceRef.current = true;
     }
   }
 
@@ -115,8 +153,10 @@ export default function MapView({ shops, selectedId, onSelect }: MapViewProps) {
     markersRef.current.forEach((marker, id) => {
       marker.setIcon({
         url: tartIcon(id === selectedId),
-        scaledSize: new google.maps.Size(36, 36),
+        scaledSize: new google.maps.Size(MARKER_SIZE, MARKER_SIZE),
+        anchor: new google.maps.Point(MARKER_SIZE / 2, MARKER_SIZE - 6),
       });
+      marker.setZIndex(id === selectedId ? 999 : undefined);
     });
     if (selectedId) {
       const shop = shops.find((s) => s.id === selectedId);
@@ -125,5 +165,5 @@ export default function MapView({ shops, selectedId, onSelect }: MapViewProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedId]);
 
-  return <div ref={divRef} className="h-full w-full rounded-card" aria-label="Map of egg tart shops" />;
+  return <div ref={divRef} className="h-full w-full" aria-label="Map of egg tart shops" />;
 }

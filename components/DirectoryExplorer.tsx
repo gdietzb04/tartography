@@ -6,7 +6,14 @@ import type { ShopWithRating } from "@/lib/types";
 import FilterBar, { emptyFilters, type Filters } from "./FilterBar";
 import ShopCard from "./ShopCard";
 
-const MapView = dynamic(() => import("./MapView"), { ssr: false });
+const MapView = dynamic(() => import("./MapView"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-full w-full items-center justify-center bg-custard/20">
+      <span className="text-sm font-bold text-cocoa-soft">Loading the map…</span>
+    </div>
+  ),
+});
 
 export default function DirectoryExplorer({ shops }: { shops: ShopWithRating[] }) {
   const [filters, setFilters] = useState<Filters>(emptyFilters);
@@ -35,15 +42,19 @@ export default function DirectoryExplorer({ shops }: { shops: ShopWithRating[] }
     <div className="flex flex-col gap-4">
       <FilterBar filters={filters} onChange={setFilters} boroughs={boroughs} />
 
-      <div className="flex gap-2 lg:hidden" role="group" aria-label="Switch between list and map">
+      <div
+        className="flex rounded-full border border-line bg-paper p-1 shadow-card lg:hidden"
+        role="group"
+        aria-label="Switch between list and map"
+      >
         {(["list", "map"] as const).map((v) => (
           <button
             key={v}
             type="button"
             aria-pressed={mobileView === v}
             onClick={() => setMobileView(v)}
-            className={`min-h-[44px] flex-1 rounded-full border text-sm font-bold transition-colors duration-150 ease-out ${
-              mobileView === v ? "border-crust bg-crust text-paper" : "border-line bg-paper text-cocoa-soft"
+            className={`min-h-[40px] flex-1 rounded-full text-sm font-bold transition-colors duration-150 ease-out ${
+              mobileView === v ? "bg-crust text-paper" : "text-cocoa-soft"
             }`}
           >
             {v === "list" ? "List" : "Map"}
@@ -51,27 +62,29 @@ export default function DirectoryExplorer({ shops }: { shops: ShopWithRating[] }
         ))}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,4fr)]">
-        <div className={`${mobileView === "map" ? "hidden lg:block" : ""}`}>
-          <p className="mb-3 text-sm text-cocoa-soft" role="status">
+      <div className="grid gap-4 lg:h-[calc(100vh-15rem)] lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+        <div className={`flex min-h-0 flex-col ${mobileView === "map" ? "hidden lg:flex" : ""}`}>
+          <p className="mb-2 shrink-0 text-sm text-cocoa-soft" role="status">
             {filtered.length === 0
               ? "Nothing matches those filters. Loosen one and try again."
               : `${filtered.length} ${filtered.length === 1 ? "shop" : "shops"} selling egg tarts right now`}
           </p>
-          <div className="grid max-h-[70vh] gap-3 overflow-y-auto pb-2 pr-1 sm:grid-cols-2">
-            {filtered.map((shop, i) => (
-              <ShopCard
-                key={shop.id}
-                shop={shop}
-                index={i}
-                selected={shop.id === selectedId}
-                onHover={setSelectedId}
-              />
-            ))}
+          <div className="min-h-0 flex-1 overflow-y-auto rounded-2xl border border-line bg-paper p-2 shadow-card lg:max-h-none">
+            <div className="divide-y divide-line">
+              {filtered.map((shop, i) => (
+                <ShopCard
+                  key={shop.id}
+                  shop={shop}
+                  index={i}
+                  selected={shop.id === selectedId}
+                  onHover={setSelectedId}
+                />
+              ))}
+            </div>
           </div>
         </div>
         <div
-          className={`h-[70vh] overflow-hidden rounded-card border border-line shadow-card ${
+          className={`h-[70vh] overflow-hidden rounded-2xl border border-line shadow-raised lg:h-auto ${
             mobileView === "list" ? "hidden lg:block" : ""
           }`}
         >
