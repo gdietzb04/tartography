@@ -9,7 +9,23 @@
 
 body {
   color: var(--foreground);
-  background: var(--background);
+  background:
+    radial-gradient(1100px 600px at 12% -8%, rgba(245, 215, 142, 0.28), transparent 60%),
+    radial-gradient(900px 520px at 100% 0%, rgba(217, 130, 43, 0.1), transparent 55%),
+    var(--background);
+  background-attachment: fixed;
+}
+
+::selection {
+  background: #f5d78e;
+  color: #3a2a1b;
+}
+
+/* Consistent keyboard focus ring across interactive elements. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid #d9822b;
+  outline-offset: 2px;
+  border-radius: 6px;
 }
 
 /* Entrance animation for list items; components add a per-item delay of 30-50ms. */

@@ -2,7 +2,19 @@ import type { EggTartStyle, PriceRange } from "@/lib/types";
 
 export function StyleBadge({ style }: { style: EggTartStyle }) {
   const short =
-    style === "Hong Kong-style" ? "HK flaky" : style === "Chinese bakery-style" ? "Shortcrust" : "Other";
+    style === "Hong Kong-style"
+      ? "HK flaky"
+      : style === "Chinese bakery-style"
+        ? "Shortcrust"
+        : style === "Portuguese-style"
+          ? "Portuguese"
+          : style === "Cookie-crust"
+            ? "Cookie-crust"
+            : style === "Taiwanese-style"
+              ? "Taiwanese"
+              : style === "Flavored/specialty"
+                ? "Flavored"
+                : "Other";
   return (
     <span className="inline-flex items-center gap-1 rounded-full bg-custard/60 px-2.5 py-1 text-xs font-bold text-crust">
       <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">

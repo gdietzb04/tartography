@@ -8,6 +8,7 @@ export interface Filters {
   prices: PriceRange[];
   dedicatedOnly: boolean;
   bestOnly: boolean;
+  favoritesOnly: boolean;
   search: string;
 }
 
@@ -17,6 +18,7 @@ export const emptyFilters: Filters = {
   prices: [],
   dedicatedOnly: false,
   bestOnly: false,
+  favoritesOnly: false,
   search: "",
 };
 
@@ -24,6 +26,7 @@ interface FilterBarProps {
   filters: Filters;
   onChange: (f: Filters) => void;
   boroughs: string[];
+  showFavorites?: boolean;
 }
 
 function toggle<T>(list: T[], value: T): T[] {
@@ -37,14 +40,15 @@ function isEmpty(f: Filters): boolean {
     f.prices.length === 0 &&
     !f.dedicatedOnly &&
     !f.bestOnly &&
+    !f.favoritesOnly &&
     f.search.trim() === ""
   );
 }
 
 const chipBase =
-  "inline-flex min-h-[36px] items-center whitespace-nowrap rounded-full border px-3.5 text-[13px] font-bold transition-colors duration-150 ease-out";
+  "inline-flex min-h-[36px] items-center whitespace-nowrap rounded-full border px-3.5 text-[13px] font-bold transition-[transform,background-color,border-color] duration-150 ease-out active:scale-95";
 const chipOff = "border-line bg-cream/60 text-cocoa-soft hover:border-yolk hover:text-cocoa";
-const chipOn = "border-yolk bg-yolk text-paper";
+const chipOn = "border-yolk bg-yolk text-paper shadow-card";
 
 function Group({
   label,
@@ -54,19 +58,27 @@ function Group({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex shrink-0 items-center gap-2">
-      <span className="text-[11px] font-bold uppercase tracking-wide text-cocoa-soft/70">{label}</span>
-      <div className="flex gap-1.5">{children}</div>
+    <div className="flex min-w-0 shrink items-baseline gap-2">
+      <span className="shrink-0 pt-1.5 text-[11px] font-bold uppercase tracking-wide text-cocoa-soft/70">{label}</span>
+      <div className="flex flex-wrap gap-1.5">{children}</div>
     </div>
   );
 }
 
-export default function FilterBar({ filters, onChange, boroughs }: FilterBarProps) {
-  const styles: EggTartStyle[] = ["Hong Kong-style", "Chinese bakery-style", "Other"];
+export default function FilterBar({ filters, onChange, boroughs, showFavorites }: FilterBarProps) {
+  const styles: EggTartStyle[] = [
+    "Hong Kong-style",
+    "Chinese bakery-style",
+    "Portuguese-style",
+    "Cookie-crust",
+    "Taiwanese-style",
+    "Flavored/specialty",
+    "Other",
+  ];
   const prices: PriceRange[] = ["$", "$$", "$$$"];
 
   return (
-    <div className="rounded-2xl border border-line bg-paper shadow-card">
+    <div className="rounded-card border border-line bg-paper shadow-card">
       <div className="flex items-center gap-3 border-b border-line px-4 py-3">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B573F" strokeWidth="2" aria-hidden="true" className="shrink-0">
           <circle cx="11" cy="11" r="7" />
@@ -133,7 +145,7 @@ export default function FilterBar({ filters, onChange, boroughs }: FilterBarProp
           ))}
         </Group>
 
-        <div className="flex shrink-0 gap-1.5 sm:ml-auto">
+        <div className="flex flex-wrap gap-1.5 sm:ml-auto">
           <button
             type="button"
             aria-pressed={filters.dedicatedOnly}
@@ -150,6 +162,19 @@ export default function FilterBar({ filters, onChange, boroughs }: FilterBarProp
           >
             Top tarts
           </button>
+          {showFavorites && (
+            <button
+              type="button"
+              aria-pressed={filters.favoritesOnly}
+              onClick={() => onChange({ ...filters, favoritesOnly: !filters.favoritesOnly })}
+              className={`${chipBase} inline-flex items-center gap-1 ${filters.favoritesOnly ? "border-berry bg-berry text-paper shadow-card" : "border-line bg-cream/60 text-berry hover:border-berry"}`}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 21s-7.5-4.6-10-9.2C.4 8.6 1.9 5 5.3 5c2 0 3.4 1.1 4.7 2.7C11.3 6.1 12.7 5 14.7 5c3.4 0 4.9 3.6 3.3 6.8C19.5 16.4 12 21 12 21z" />
+              </svg>
+              Favorites
+            </button>
+          )}
         </div>
       </div>
     </div>

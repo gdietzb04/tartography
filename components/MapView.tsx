@@ -101,11 +101,11 @@ export default function MapView({ shops, selectedId, onSelect }: MapViewProps) {
             ? "No ratings yet"
             : `${shop.overall_rating.toFixed(1)} / 5 (${shop.review_count})`;
         infoRef.current?.setContent(
-          `<div style="font-family:Georgia,serif;color:#3A2A1B;max-width:220px">
-            <strong style="font-size:15px">${shop.name}</strong>
-            <div style="font-size:13px;margin-top:2px">${shop.neighborhood}, ${shop.borough}</div>
-            <div style="font-size:13px;margin-top:2px">${rating}</div>
-            <a href="/shops/${shop.id}" style="display:inline-block;margin-top:6px;font-size:13px;font-weight:bold;color:#B5651D">See the tarts</a>
+          `<div style="color:#3A2A1B;max-width:230px;padding:2px 2px 4px">
+            <strong style="font-family:var(--font-bitter),Georgia,serif;font-size:16px;font-weight:600;line-height:1.15;display:block">${shop.name}</strong>
+            <div style="font-family:var(--font-schibsted),system-ui,sans-serif;font-size:13px;margin-top:3px;color:#6B573F">${shop.neighborhood}, ${shop.borough}</div>
+            <div style="font-family:var(--font-schibsted),system-ui,sans-serif;font-size:13px;margin-top:2px;font-weight:700">${rating}</div>
+            <a href="/shops/${shop.id}" style="font-family:var(--font-schibsted),system-ui,sans-serif;display:inline-block;margin-top:8px;font-size:13px;font-weight:700;color:#FEF9EF;background:#7A4A21;padding:6px 12px;border-radius:999px;text-decoration:none">See the tarts</a>
           </div>`
         );
         infoRef.current?.open({ map, anchor: marker });

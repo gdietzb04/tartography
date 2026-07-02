@@ -22,8 +22,12 @@ const config: Config = {
         line: "#E8DCC3",
       },
       fontFamily: {
-        display: ["var(--font-fraunces)", "Georgia", "serif"],
-        body: ["var(--font-karla)", "Verdana", "sans-serif"],
+        // Wordmark + editorial headings.
+        display: ["var(--font-bricolage)", "system-ui", "sans-serif"],
+        // Shop names — slab serif.
+        name: ["var(--font-bitter)", "Georgia", "serif"],
+        // Body + UI.
+        body: ["var(--font-schibsted)", "system-ui", "sans-serif"],
       },
       boxShadow: {
         // Single elevation scale used everywhere: card < raised < modal.

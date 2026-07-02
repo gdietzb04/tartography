@@ -6,6 +6,9 @@ import Stars from "@/components/Stars";
 import { BestBadge, DedicatedBadge, PriceBadge, StyleBadge } from "@/components/Badges";
 import TartPlaceholder from "@/components/TartPlaceholder";
 import ReviewForm from "@/components/ReviewForm";
+import RubricBreakdown from "@/components/RubricBreakdown";
+import AuthButton from "@/components/AuthButton";
+import FavoriteButton from "@/components/FavoriteButton";
 import type { DayKey } from "@/lib/types";
 
 export const revalidate = 60;
@@ -35,12 +38,15 @@ export default async function ShopPage({ params }: { params: { id: string } }) {
 
   return (
     <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6">
-      <Link
-        href="/"
-        className="inline-flex min-h-[44px] items-center gap-1 text-sm font-bold text-yolk-deep transition-colors duration-150 ease-out hover:text-crust"
-      >
-        <span aria-hidden="true">&larr;</span> Back to the map
-      </Link>
+      <div className="flex items-center justify-between gap-3">
+        <Link
+          href="/"
+          className="inline-flex min-h-[44px] items-center gap-1 text-sm font-bold text-yolk-deep transition-colors duration-150 ease-out hover:text-crust"
+        >
+          <span aria-hidden="true">&larr;</span> Back to the map
+        </Link>
+        <AuthButton />
+      </div>
 
       <article className="mt-4 overflow-hidden rounded-card border border-line bg-paper shadow-card">
         {shop.photos.length > 0 ? (
@@ -52,12 +58,15 @@ export default async function ShopPage({ params }: { params: { id: string } }) {
         <div className="p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h1 className="font-display text-3xl font-bold text-cocoa">{shop.name}</h1>
+              <h1 className="font-name text-3xl font-bold leading-tight text-cocoa sm:text-4xl">{shop.name}</h1>
               <p className="mt-1 text-cocoa-soft">
                 {shop.address} · {shop.neighborhood}, {shop.borough}
               </p>
             </div>
-            <PriceBadge price={shop.price_range} />
+            <div className="flex items-center gap-2">
+              <FavoriteButton shopId={shop.id} variant="inline" />
+              <PriceBadge price={shop.price_range} />
+            </div>
           </div>
 
           <div className="mt-3">
@@ -122,6 +131,12 @@ export default async function ShopPage({ params }: { params: { id: string } }) {
           </div>
         </div>
       </article>
+
+      {reviews.length > 0 && (
+        <section className="mt-8">
+          <RubricBreakdown reviews={reviews} />
+        </section>
+      )}
 
       <section className="mt-8">
         <h2 className="font-display text-2xl font-bold text-cocoa">Reviews</h2>

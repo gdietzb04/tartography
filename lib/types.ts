@@ -1,4 +1,11 @@
-export type EggTartStyle = "Hong Kong-style" | "Chinese bakery-style" | "Other";
+export type EggTartStyle =
+  | "Hong Kong-style"
+  | "Chinese bakery-style"
+  | "Portuguese-style"
+  | "Cookie-crust"
+  | "Taiwanese-style"
+  | "Flavored/specialty"
+  | "Other";
 export type PriceRange = "$" | "$$" | "$$$";
 
 export type DayKey = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";

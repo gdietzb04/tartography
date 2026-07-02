@@ -1,17 +1,27 @@
 import type { Metadata } from "next";
-import { Fraunces, Karla } from "next/font/google";
+import { Bricolage_Grotesque, Bitter, Schibsted_Grotesk } from "next/font/google";
+import AuthProvider from "@/components/AuthProvider";
 import "./globals.css";
 
-const fraunces = Fraunces({
+// Display + wordmark + editorial headings.
+const bricolage = Bricolage_Grotesque({
   subsets: ["latin"],
-  variable: "--font-fraunces",
+  variable: "--font-bricolage",
+  weight: ["500", "600", "700", "800"],
+});
+
+// Shop names — sturdy slab serif, legible in dense lists.
+const bitter = Bitter({
+  subsets: ["latin"],
+  variable: "--font-bitter",
   weight: ["500", "600", "700"],
 });
 
-const karla = Karla({
+// Body + UI.
+const schibsted = Schibsted_Grotesk({
   subsets: ["latin"],
-  variable: "--font-karla",
-  weight: ["400", "500", "700"],
+  variable: "--font-schibsted",
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -25,8 +35,10 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className={`${fraunces.variable} ${karla.variable} font-body antialiased`}>
-        {children}
+      <body
+        className={`${bricolage.variable} ${bitter.variable} ${schibsted.variable} font-body antialiased`}
+      >
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

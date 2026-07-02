@@ -46,3 +46,20 @@ alter table reviews enable row level security;
 create policy "public read shops" on shops for select using (true);
 create policy "public read reviews" on reviews for select using (true);
 create policy "guest insert reviews" on reviews for insert with check (true);
+
+-- Favorites: one row per (signed-in user, shop). Requires Supabase Auth
+-- (Google provider enabled in the dashboard). Each user sees/edits only their own.
+create table if not exists favorites (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  shop_id uuid not null references shops(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (user_id, shop_id)
+);
+
+create index if not exists favorites_user_id_idx on favorites(user_id);
+
+alter table favorites enable row level security;
+
+create policy "own favorites read" on favorites for select using (auth.uid() = user_id);
+create policy "own favorites insert" on favorites for insert with check (auth.uid() = user_id);
+create policy "own favorites delete" on favorites for delete using (auth.uid() = user_id);

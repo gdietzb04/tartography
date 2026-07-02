@@ -13,6 +13,7 @@
     "@googlemaps/js-api-loader": "^2.1.1",
     "@googlemaps/markerclusterer": "^2.6.2",
     "@supabase/supabase-js": "^2.110.0",
+    "framer-motion": "^12.42.2",
     "next": "14.2.35",
     "react": "^18",
     "react-dom": "^18"
