@@ -12,7 +12,8 @@ const SCORE_FIELDS = [
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
 const PHOTO_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
-// Service role client, server-only: needed to upload guest photos to storage.
+// Service role client, server-only: verifies the caller's session token and
+// uploads review photos to storage.
 function supabaseAdmin() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -22,6 +23,21 @@ function supabaseAdmin() {
 }
 
 export async function POST(req: NextRequest) {
+  const authHeader = req.headers.get("authorization") ?? "";
+  const accessToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+  if (!accessToken) {
+    return NextResponse.json({ error: "Sign in to leave a review." }, { status: 401 });
+  }
+
+  const authClient = supabaseAdmin();
+  const { data: userData, error: userErr } = await authClient.auth.getUser(accessToken);
+  if (userErr || !userData.user) {
+    return NextResponse.json({ error: "Sign in to leave a review." }, { status: 401 });
+  }
+  const user = userData.user;
+  const meta = user.user_metadata ?? {};
+  const name: string = String(meta.full_name || meta.name || user.email || "Tartography user").slice(0, 60);
+
   let form: FormData;
   try {
     form = await req.formData();
@@ -30,12 +46,8 @@ export async function POST(req: NextRequest) {
   }
 
   const shopId = String(form.get("shop_id") ?? "");
-  const name = String(form.get("reviewer_display_name") ?? "").trim();
   if (!/^[0-9a-f-]{36}$/i.test(shopId)) {
     return NextResponse.json({ error: "That shop id does not look right." }, { status: 400 });
-  }
-  if (name.length < 1 || name.length > 60) {
-    return NextResponse.json({ error: "Add a display name, 60 characters max." }, { status: 400 });
   }
 
   const scores: Record<string, number> = {};
@@ -86,6 +98,7 @@ export async function POST(req: NextRequest) {
   const { error: insErr } = await db.from("reviews").insert({
     shop_id: shopId,
     reviewer_display_name: name,
+    user_id: user.id,
     ...scores,
     comment,
     photo_url: photoUrl,

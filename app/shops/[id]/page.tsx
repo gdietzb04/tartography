@@ -9,6 +9,7 @@ import ReviewForm from "@/components/ReviewForm";
 import RubricBreakdown from "@/components/RubricBreakdown";
 import AuthButton from "@/components/AuthButton";
 import FavoriteButton from "@/components/FavoriteButton";
+import ReviewVoteButton from "@/components/ReviewVoteButton";
 import type { DayKey } from "@/lib/types";
 
 export const revalidate = 60;
@@ -169,6 +170,7 @@ export default async function ShopPage({ params }: { params: { id: string } }) {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={r.photo_url} alt="Reviewer photo of the egg tart" className="mt-3 h-40 rounded-lg object-cover" />
                 )}
+                <ReviewVoteButton reviewId={r.id} reviewOwnerId={r.user_id} initialCount={r.vote_count} />
               </li>
             ))}
           </ul>

@@ -1,6 +1,6 @@
 import { supabaseAnon } from "./supabase";
 import { withRating } from "./rating";
-import type { Review, Shop, ShopWithRating } from "./types";
+import type { Review, ReviewWithVotes, Shop, ShopWithRating } from "./types";
 
 export async function getShopsWithRatings(): Promise<ShopWithRating[]> {
   const db = supabaseAnon();
@@ -24,7 +24,7 @@ export async function getShopsWithRatings(): Promise<ShopWithRating[]> {
 
 export async function getShopWithReviews(
   id: string
-): Promise<{ shop: ShopWithRating; reviews: Review[] } | null> {
+): Promise<{ shop: ShopWithRating; reviews: ReviewWithVotes[] } | null> {
   const db = supabaseAnon();
   const [shopRes, reviewsRes] = await Promise.all([
     db.from("shops").select("*").eq("id", id).maybeSingle(),
@@ -37,5 +37,21 @@ export async function getShopWithReviews(
   if (shopRes.error) throw shopRes.error;
   if (!shopRes.data) return null;
   const reviews = (reviewsRes.data ?? []) as Review[];
-  return { shop: withRating(shopRes.data as Shop, reviews), reviews };
+
+  const reviewIds = reviews.map((r) => r.id);
+  const votesByReview = new Map<string, number>();
+  if (reviewIds.length > 0) {
+    const votesRes = await db.from("review_votes").select("review_id").in("review_id", reviewIds);
+    if (votesRes.error) throw votesRes.error;
+    for (const row of votesRes.data ?? []) {
+      const key = row.review_id as string;
+      votesByReview.set(key, (votesByReview.get(key) ?? 0) + 1);
+    }
+  }
+  const reviewsWithVotes: ReviewWithVotes[] = reviews.map((r) => ({
+    ...r,
+    vote_count: votesByReview.get(r.id) ?? 0,
+  }));
+
+  return { shop: withRating(shopRes.data as Shop, reviews), reviews: reviewsWithVotes };
 }

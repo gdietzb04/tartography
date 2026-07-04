@@ -11,6 +11,8 @@ interface AuthContextValue {
   favoriteCount: number;
   isFavorite: (shopId: string) => boolean;
   toggleFavorite: (shopId: string) => Promise<void>;
+  hasVoted: (reviewId: string) => boolean;
+  toggleVote: (reviewId: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -28,6 +30,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   const [user, setUser] = useState<User | null>(null);
   const [ready, setReady] = useState(false);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [votedReviews, setVotedReviews] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -52,6 +55,24 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       .eq("user_id", user.id)
       .then(({ data }) => {
         if (active && data) setFavorites(new Set(data.map((r) => r.shop_id as string)));
+      });
+    return () => {
+      active = false;
+    };
+  }, [user, supabase]);
+
+  useEffect(() => {
+    if (!user) {
+      setVotedReviews(new Set());
+      return;
+    }
+    let active = true;
+    supabase
+      .from("review_votes")
+      .select("review_id")
+      .eq("user_id", user.id)
+      .then(({ data }) => {
+        if (active && data) setVotedReviews(new Set(data.map((r) => r.review_id as string)));
       });
     return () => {
       active = false;
@@ -101,6 +122,38 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
   const isFavorite = useCallback((shopId: string) => favorites.has(shopId), [favorites]);
 
+  const toggleVote = useCallback(
+    async (reviewId: string) => {
+      if (!user) {
+        await signInWithGoogle();
+        return;
+      }
+      const had = votedReviews.has(reviewId);
+      setVotedReviews((prev) => {
+        const next = new Set(prev);
+        if (had) next.delete(reviewId);
+        else next.add(reviewId);
+        return next;
+      });
+      const query = had
+        ? supabase.from("review_votes").delete().eq("user_id", user.id).eq("review_id", reviewId)
+        : supabase.from("review_votes").insert({ user_id: user.id, review_id: reviewId });
+      const { error } = await query;
+      if (error) {
+        // Roll back optimistic update on failure.
+        setVotedReviews((prev) => {
+          const next = new Set(prev);
+          if (had) next.add(reviewId);
+          else next.delete(reviewId);
+          return next;
+        });
+      }
+    },
+    [user, votedReviews, supabase, signInWithGoogle]
+  );
+
+  const hasVoted = useCallback((reviewId: string) => votedReviews.has(reviewId), [votedReviews]);
+
   return (
     <AuthContext.Provider
       value={{
@@ -110,6 +163,8 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
         favoriteCount: favorites.size,
         isFavorite,
         toggleFavorite,
+        hasVoted,
+        toggleVote,
         signInWithGoogle,
         signOut,
       }}

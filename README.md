@@ -1,6 +1,6 @@
 # Tartography
 
-Every mapped egg tart in New York. A directory of NYC bakeries that sell egg tarts — Hong Kong flaky shells, Chinese-bakery shortcrust, Portuguese pastel de nata, and more — with guest reviews scored on a five-part rubric (crust, custard, sweetness, value, freshness) and Google sign-in to save favorites.
+Every mapped egg tart in New York. A directory of NYC bakeries that sell egg tarts — Hong Kong flaky shells, Chinese-bakery shortcrust, Portuguese pastel de nata, and more — with Google sign-in required to post reviews (scored on a five-part rubric: crust, custard, sweetness, value, freshness), vote reviews helpful, and save favorites.
 
 Built with Next.js 14 (App Router), TypeScript, Tailwind CSS, Google Maps JS API + MarkerClusterer, and Supabase Postgres. See [ARCHITECTURE.md](ARCHITECTURE.md) for the reasoning.
 

@@ -37,6 +37,7 @@ export interface Review {
   id: string;
   shop_id: string;
   reviewer_display_name: string;
+  user_id: string | null;
   crust_score: number;
   custard_score: number;
   sweetness_score: number;
@@ -45,6 +46,10 @@ export interface Review {
   comment: string | null;
   photo_url: string | null;
   created_at: string;
+}
+
+export interface ReviewWithVotes extends Review {
+  vote_count: number;
 }
 
 export interface ShopWithRating extends Shop {
