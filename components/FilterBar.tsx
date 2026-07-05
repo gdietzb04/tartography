@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { EggTartStyle, PriceRange } from "@/lib/types";
 
 export interface Filters {
@@ -45,6 +46,19 @@ function isEmpty(f: Filters): boolean {
   );
 }
 
+// Count of active chip-style filters (everything except the always-visible
+// search box), used for the collapsed mobile filter badge.
+function activeCount(f: Filters): number {
+  return (
+    f.styles.length +
+    f.boroughs.length +
+    f.prices.length +
+    (f.dedicatedOnly ? 1 : 0) +
+    (f.bestOnly ? 1 : 0) +
+    (f.favoritesOnly ? 1 : 0)
+  );
+}
+
 const chipBase =
   "inline-flex min-h-[36px] items-center whitespace-nowrap rounded-full border px-3.5 text-[13px] font-bold transition-[transform,background-color,border-color] duration-150 ease-out active:scale-95";
 const chipOff = "border-line bg-cream/60 text-cocoa-soft hover:border-yolk hover:text-cocoa";
@@ -66,6 +80,10 @@ function Group({
 }
 
 export default function FilterBar({ filters, onChange, boroughs, showFavorites }: FilterBarProps) {
+  // On mobile the chip rows collapse behind a "Filters" toggle to reclaim
+  // vertical space; on lg+ they are always shown regardless of this state.
+  const [open, setOpen] = useState(false);
+  const count = activeCount(filters);
   const styles: EggTartStyle[] = [
     "Hong Kong-style",
     "Chinese bakery-style",
@@ -102,7 +120,39 @@ export default function FilterBar({ filters, onChange, boroughs, showFavorites }
         )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="flex w-full items-center justify-between gap-2 border-b border-line px-4 py-2.5 text-sm font-bold text-cocoa lg:hidden"
+      >
+        <span className="flex items-center gap-2">
+          Filters
+          {count > 0 && (
+            <span className="inline-flex min-w-[20px] items-center justify-center rounded-full bg-yolk px-1.5 text-[11px] font-bold text-paper">
+              {count}
+            </span>
+          )}
+        </span>
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+          className={`shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+        >
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </button>
+
+      <div
+        className={`${open ? "flex" : "hidden"} flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3 lg:flex`}
+      >
         <Group label="Style">
           {styles.map((s) => (
             <button
