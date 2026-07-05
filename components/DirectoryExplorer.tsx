@@ -188,7 +188,7 @@ function MobileMapSheet({
       className="relative h-[calc(100dvh-11rem)] min-h-[440px] overflow-hidden rounded-card border border-line shadow-raised"
     >
       <div className="absolute inset-0">
-        <MapView shops={filtered} selectedId={selectedId} onSelect={setSelectedId} />
+        <MapView shops={filtered} selectedId={selectedId} onSelect={setSelectedId} expandable />
       </div>
 
       <motion.div
